@@ -1,0 +1,1860 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Tool Custody" />
+<meta name="theme-color" content="#14181c" />
+<title>Tool Custody</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap');
+
+:root{
+  --bg: #14181c;
+  --panel: #1b2127;
+  --panel-raised: #222a32;
+  --border: #313b45;
+  --border-soft: #262f38;
+  --text: #ece9e2;
+  --text-dim: #93a0ac;
+  --text-faint: #5f6b76;
+  --accent: #f2b705;
+  --accent-ink: #201800;
+  --accent2: #4fa3b8;
+  --danger: #e2604f;
+  --danger-bg: #3a2420;
+  --success: #57b587;
+  --radius: 14px;
+  --radius-sm: 9px;
+  --font-display: 'Oswald', 'Arial Narrow', sans-serif;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+}
+
+*{ box-sizing: border-box; }
+html, body{
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  -webkit-tap-highlight-color: transparent;
+}
+body{
+  min-height: 100vh;
+}
+#page{
+  max-width: 480px;
+  margin: 0 auto;
+  min-height: 100vh;
+  background:
+    radial-gradient(1200px 600px at 50% -10%, rgba(242,183,5,0.05), transparent 60%),
+    var(--bg);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+#app{
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 18px 18px 32px;
+  overflow-y: auto;
+}
+button{ font-family: inherit; cursor: pointer; }
+input, textarea, select{ font-family: inherit; }
+::selection{ background: var(--accent); color: var(--accent-ink); }
+
+.icon{ display: inline-block; vertical-align: -3px; flex-shrink: 0; }
+.icon.flip{ transform: scaleX(-1); }
+
+.dim{ color: var(--text-dim); font-size: 14px; margin: 4px 0 0; }
+.dim-sm{ color: var(--text-faint); font-size: 12px; display: inline-flex; align-items: center; gap: 4px; }
+.strike{ text-decoration: line-through; color: var(--text-faint); }
+
+.screen{ display: flex; flex-direction: column; gap: 14px; animation: fadeIn .22s ease; }
+@keyframes fadeIn{ from{ opacity: 0; transform: translateY(6px);} to{ opacity: 1; transform: translateY(0);} }
+
+.center-fill{ flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 10px; padding: 40px 10px; }
+
+.spinner{
+  width: 34px; height: 34px; border-radius: 50%;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin{ to{ transform: rotate(360deg); } }
+
+.alert-card{ color: var(--danger); display: flex; flex-direction: column; align-items: center; gap: 10px; }
+
+.diag-box{
+  margin-top: 10px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 14px;
+  text-align: left;
+  color: var(--text);
+  max-width: 100%;
+}
+.diag-url{
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--accent2);
+  background: var(--panel-raised);
+  border-radius: 6px;
+  padding: 8px 10px;
+  margin: 6px 0;
+  word-break: break-all;
+  user-select: all;
+}
+.diag-box code{ font-family: var(--font-mono); font-size: 0.95em; }
+
+/* ---------- Buttons ---------- */
+.cta-btn{
+  background: var(--accent);
+  color: var(--accent-ink);
+  border: none;
+  border-radius: var(--radius);
+  padding: 17px 18px;
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  width: 100%;
+  transition: transform .12s ease, filter .12s ease;
+}
+.cta-btn:active{ transform: scale(0.98); }
+.cta-btn:disabled{ opacity: 0.35; filter: grayscale(0.4); cursor: not-allowed; }
+
+.secondary-btn{
+  background: var(--panel-raised);
+  color: var(--text);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 13px 14px;
+  font-weight: 600;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.secondary-btn:active{ transform: scale(0.98); }
+.secondary-btn.full{ width: 100%; }
+
+.row-2{ display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+.back-btn{
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-size: 14px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 0;
+  align-self: flex-start;
+}
+
+.icon-btn{
+  background: var(--panel-raised);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 10px;
+  width: 40px; height: 40px;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.admin-link{
+  margin-top: auto;
+  align-self: center;
+  background: none;
+  border: none;
+  color: var(--text-faint);
+  font-size: 13px;
+  display: flex; align-items: center; gap: 6px;
+  padding: 10px;
+}
+
+.setup-screen{ padding-top: 6vh; }
+.setup-card{
+  background: var(--panel);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.setup-list{ margin: 4px 0; padding-left: 20px; display: flex; flex-direction: column; gap: 10px; font-size: 13.5px; line-height: 1.5; }
+.setup-list li{ padding-left: 4px; }
+.setup-list strong{ color: var(--accent); font-family: var(--font-mono); font-weight: 600; font-size: 0.95em; }
+
+/* ---------- Login ---------- */
+.login-screen{ align-items: stretch; min-height: calc(100vh - 50px); justify-content: flex-start; padding-top: 6vh; }
+.brand{ text-align: center; margin-bottom: 10px; }
+.brand-mark{
+  width: 52px; height: 52px; margin: 0 auto 14px;
+  border-radius: 12px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  display: flex; align-items: center; justify-content: center;
+}
+.brand h1{
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 24px;
+  margin: 0;
+}
+.brand-sub{ color: var(--text-dim); font-size: 14px; margin-top: 6px; }
+
+.tech-grid{ display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 10px; }
+.tech-tile{
+  background: var(--panel);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 22px 10px;
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+  color: var(--text);
+}
+.tech-tile:active{ border-color: var(--accent); transform: scale(0.98); }
+.tech-avatar{
+  width: 48px; height: 48px; border-radius: 50%;
+  background: var(--panel-raised);
+  border: 1.5px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-display);
+  font-size: 16px;
+  color: var(--accent);
+}
+.tech-name{ font-weight: 600; font-size: 14px; text-align: center; }
+
+/* ---------- PIN ---------- */
+.pin-screen{ align-items: center; text-align: center; }
+.pin-header{ display: flex; flex-direction: column; align-items: center; gap: 8px; position: relative; padding-top: 4px; }
+.pin-eyebrow{ text-transform: uppercase; letter-spacing: 0.14em; font-size: 11px; color: var(--text-faint); margin: 0; }
+.pin-header h2{ font-family: var(--font-display); text-transform: uppercase; margin: 0; font-size: 20px; }
+.pin-dots{ display: flex; gap: 12px; margin: 10px 0; }
+.pin-dot{ width: 15px; height: 15px; border-radius: 50%; border: 2px solid var(--border); }
+.pin-dot.filled{ background: var(--accent); border-color: var(--accent); }
+.pin-error{ color: var(--danger); font-size: 13px; display: flex; align-items: center; gap: 5px; margin: 0; }
+.pin-pad{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; width: 100%; max-width: 300px; margin: 8px auto 0; }
+.pin-key{
+  background: var(--panel);
+  border: 1.5px solid var(--border);
+  color: var(--text);
+  border-radius: var(--radius);
+  font-family: var(--font-mono);
+  font-size: 20px;
+  font-weight: 600;
+  padding: 18px 0;
+  display: flex; align-items: center; justify-content: center;
+}
+.pin-key:active{ background: var(--panel-raised); border-color: var(--accent); }
+.pin-key-empty{ background: transparent; border: none; }
+.pin-key-fn{ color: var(--text-dim); }
+
+/* ---------- Top bar / stats ---------- */
+.topbar{ display: flex; align-items: center; justify-content: space-between; }
+.topbar-eyebrow{ text-transform: uppercase; letter-spacing: 0.12em; font-size: 11px; color: var(--text-faint); margin: 0 0 2px; display: flex; align-items: center; gap: 5px; }
+.topbar h2{ font-family: var(--font-display); text-transform: uppercase; margin: 0; font-size: 20px; }
+
+.stat-row{ display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.stat-card{
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  display: flex; flex-direction: column; gap: 2px;
+}
+.stat-num{ font-family: var(--font-display); font-size: 28px; color: var(--accent); }
+.stat-label{ font-size: 12px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.04em; }
+
+.section-head{ display: flex; align-items: center; justify-content: space-between; margin-top: 4px; }
+.section-head h3{ font-family: var(--font-display); text-transform: uppercase; font-size: 14px; letter-spacing: 0.04em; margin: 0; color: var(--text-dim); }
+
+.screen-title{ font-family: var(--font-display); text-transform: uppercase; font-size: 20px; margin: 0; }
+
+.topbar-actions{ display: flex; gap: 8px; }
+
+.export-banner{
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  width: 100%;
+  background: var(--panel);
+  border: 1.5px dashed var(--accent2);
+  color: var(--accent2);
+  border-radius: var(--radius-sm);
+  padding: 11px 12px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.export-banner:active{ background: var(--panel-raised); }
+
+.danger-link{
+  background: none; border: none;
+  color: var(--text-faint);
+  font-size: 12px;
+  display: flex; align-items: center; justify-content: center; gap: 5px;
+  padding: 10px;
+  margin-top: 4px;
+}
+.danger-link:active{ color: var(--danger); }
+
+/* ---------- Search / chips ---------- */
+.search-box{
+  display: flex; align-items: center; gap: 8px;
+  background: var(--panel);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 11px 12px;
+}
+.search-box input{
+  background: none; border: none; outline: none; color: var(--text);
+  font-size: 14px; width: 100%;
+}
+.search-icon{ color: var(--text-faint); }
+
+.chip-row{ display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px; }
+.chip{
+  flex-shrink: 0;
+  background: var(--panel);
+  border: 1.5px solid var(--border);
+  color: var(--text-dim);
+  border-radius: 999px;
+  padding: 7px 14px;
+  font-size: 12.5px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.chip-active{ background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+
+/* ---------- Tool list rows ---------- */
+.tool-list{ display: flex; flex-direction: column; gap: 9px; }
+.tool-row{
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 13px 14px;
+  display: flex; flex-direction: column; gap: 6px;
+  text-align: left;
+  color: var(--text);
+}
+.tool-row:active{ border-color: var(--accent2); }
+.tool-row-main{ display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.tool-row-name{ font-weight: 600; font-size: 14.5px; }
+.tool-row-id{ font-family: var(--font-mono); font-size: 11px; color: var(--text-faint); }
+.tool-row-sub{ display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+
+.badge{
+  font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em;
+  padding: 3px 8px; border-radius: 999px;
+}
+.badge-ok{ background: rgba(87,181,135,0.15); color: var(--success); }
+.badge-warn{ background: rgba(226,96,79,0.15); color: var(--danger); }
+.badge-info{ background: rgba(79,163,184,0.15); color: var(--accent2); }
+
+.empty-note{ color: var(--text-faint); font-size: 13.5px; text-align: center; padding: 18px 0; }
+
+/* ---------- Tool tag (signature element) ---------- */
+.tool-tag{
+  position: relative;
+  background: var(--panel);
+  border: 1.5px dashed var(--border);
+  border-radius: 10px;
+  padding: 18px 16px 14px;
+  overflow: hidden;
+}
+.tag-hole{
+  position: absolute;
+  top: 12px; left: 14px;
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: var(--bg);
+  border: 1.5px dashed var(--border);
+}
+.tag-id{
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--accent);
+  text-align: right;
+  letter-spacing: 0.04em;
+}
+.tag-name{
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  font-size: 19px;
+  letter-spacing: 0.02em;
+  margin-top: 10px;
+  padding-left: 22px;
+}
+.tag-cat{ color: var(--text-dim); font-size: 12.5px; padding-left: 22px; margin-top: 2px; }
+.tag-meta{ display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border-soft); flex-wrap: wrap; }
+
+.recorded-box{
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--panel-raised);
+  border-radius: var(--radius-sm);
+  padding: 10px 13px;
+}
+.recorded-value{ font-weight: 600; font-size: 13.5px; display: flex; align-items: center; gap: 6px; }
+
+.prompt-q{ font-size: 15.5px; font-weight: 600; margin: 2px 0 -4px; }
+.group-label{ text-transform: uppercase; letter-spacing: 0.08em; font-size: 11px; color: var(--text-faint); margin: 6px 0 -6px; }
+
+.entity-grid{ display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.entity-chip{
+  position: relative;
+  background: var(--panel);
+  border: 1.5px solid var(--border);
+  color: var(--text);
+  border-radius: var(--radius-sm);
+  padding: 12px 10px;
+  display: flex; align-items: center; gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: left;
+}
+.entity-chip-sel{ border-color: var(--accent); background: rgba(242,183,5,0.08); color: var(--accent); }
+.recorded-tag{
+  position: absolute; top: -7px; right: 6px;
+  background: var(--accent2); color: #0d1a1e;
+  font-size: 9px; font-weight: 700; text-transform: uppercase;
+  padding: 2px 6px; border-radius: 999px;
+}
+
+.mismatch-banner{
+  display: flex; align-items: flex-start; gap: 10px;
+  background: var(--danger-bg);
+  border: 1px solid rgba(226,96,79,0.4);
+  color: var(--danger);
+  border-radius: var(--radius-sm);
+  padding: 12px 13px;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.notes-area{
+  width: 100%;
+  background: var(--panel);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  padding: 11px 12px;
+  font-size: 13.5px;
+  min-height: 64px;
+  resize: vertical;
+  outline: none;
+}
+.notes-area:focus{ border-color: var(--accent2); }
+
+/* ---------- Success ---------- */
+.success-badge{
+  width: 72px; height: 72px; border-radius: 50%;
+  background: rgba(87,181,135,0.15);
+  color: var(--success);
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 4px;
+}
+.mismatch-note{ color: var(--danger); font-size: 12.5px; display: flex; align-items: center; gap: 5px; }
+
+/* ---------- Activity ---------- */
+.activity-list{ display: flex; flex-direction: column; gap: 9px; }
+.activity-card{
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px 13px;
+}
+.activity-top{ display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.activity-tool{ font-weight: 600; font-size: 13.5px; }
+.mismatch-pill{
+  display: inline-flex; align-items: center; gap: 4px;
+  background: var(--danger-bg); color: var(--danger);
+  font-size: 10.5px; font-weight: 700; text-transform: uppercase;
+  padding: 2px 7px; border-radius: 999px;
+}
+.activity-line{ font-size: 13px; margin: 6px 0 3px; color: var(--text); }
+.activity-notes{ font-size: 12.5px; color: var(--text-dim); font-style: italic; margin: 6px 0 0; }
+
+/* ---------- Admin ---------- */
+.admin-tabs{ display: flex; gap: 6px; overflow-x: auto; }
+.admin-tab{
+  flex-shrink: 0;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  border-radius: 999px;
+  padding: 8px 13px;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+.admin-tab-active{ background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.admin-content{ display: flex; flex-direction: column; gap: 9px; }
+
+.admin-row{
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 11px 13px;
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  flex-wrap: wrap;
+}
+.admin-row-main{ display: flex; flex-direction: column; gap: 3px; font-size: 13.5px; font-weight: 600; }
+.admin-row-actions{ display: flex; gap: 6px; flex-wrap: wrap; }
+
+.mini-btn{
+  background: var(--panel-raised);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 8px;
+  padding: 7px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  display: inline-flex; align-items: center; gap: 5px;
+}
+.mini-btn-primary{ background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.mini-btn-danger{ color: var(--danger); }
+
+.admin-add-form{
+  display: flex; flex-direction: column; gap: 8px;
+  background: var(--panel-raised);
+  border: 1.5px dashed var(--border);
+  border-radius: var(--radius-sm);
+  padding: 13px;
+  margin-top: 4px;
+}
+.admin-add-form input, .admin-add-form select, .admin-add-form textarea{
+  background: var(--panel);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 8px;
+  padding: 9px 10px;
+  font-size: 13px;
+  outline: none;
+}
+.admin-add-form textarea{ min-height: 50px; }
+
+.admin-edit-card{
+  background: var(--panel-raised);
+  border: 1.5px solid var(--accent2);
+  border-radius: var(--radius-sm);
+  padding: 13px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.admin-edit-card select, .admin-edit-card input, .admin-edit-card textarea{
+  background: var(--panel);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 8px;
+  padding: 9px 10px;
+  font-size: 13px;
+  outline: none;
+}
+
+/* ---------- Toast ---------- */
+.toast{
+  position: fixed;
+  bottom: 22px; left: 50%; transform: translateX(-50%);
+  max-width: 420px; width: calc(100% - 40px);
+  background: var(--panel-raised);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-size: 13.5px;
+  text-align: center;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  z-index: 50;
+  animation: toastIn .2s ease;
+}
+.toast-err{ border-color: var(--danger); color: var(--danger); }
+@keyframes toastIn{ from{ opacity:0; transform: translate(-50%, 10px);} to{ opacity:1; transform: translate(-50%,0);} }
+
+/* ---------- Focus visibility ---------- */
+button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible{
+  outline: 2px solid var(--accent2);
+  outline-offset: 2px;
+}
+
+/* ---------- Scrollbar (webkit) ---------- */
+#app::-webkit-scrollbar{ width: 6px; }
+#app::-webkit-scrollbar-thumb{ background: var(--border); border-radius: 3px; }
+
+@media (min-width: 481px){
+  body{ background: #0d1013; }
+  #page{ box-shadow: 0 0 0 1px var(--border-soft), 0 30px 80px rgba(0,0,0,0.5); margin-top: 0; }
+}
+
+</style>
+</head>
+<body>
+<div id="page">
+  <div id="app"></div>
+</div>
+<script>
+/* =========================================================
+   Tool Custody — internal tool tracking for field techs
+   Vanilla JS SPA. Data persists via window.storage (shared).
+   ========================================================= */
+
+/* ---------------- Icon set (hand-authored, generic line icons) ---------------- */
+var ICONS = {
+  "arrow-left": '<line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>',
+  "check": '<polyline points="20 6 9 17 4 12"/>',
+  "check-circle": '<circle cx="12" cy="12" r="9"/><polyline points="8 12.5 11 15.5 16 9"/>',
+  "x": '<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>',
+  "alert": '<path d="M12 3 L22 20 L2 20 Z"/><line x1="12" y1="9.5" x2="12" y2="14"/><circle cx="12" cy="17" r="0.6" fill="currentColor" stroke="none"/>',
+  "search": '<circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>',
+  "clock": '<circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15.5 14"/>',
+  "sliders": '<line x1="4" y1="6" x2="20" y2="6"/><circle cx="14" cy="6" r="2"/><line x1="4" y1="12" x2="20" y2="12"/><circle cx="8" cy="12" r="2"/><line x1="4" y1="18" x2="20" y2="18"/><circle cx="16" cy="18" r="2"/>',
+  "plus": '<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>',
+  "trash": '<polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>',
+  "pencil": '<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/>',
+  "user": '<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/>',
+  "users": '<circle cx="9" cy="8" r="3.4"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><circle cx="17.5" cy="9.5" r="2.8"/><path d="M15.3 14.8c2.6.5 4.7 2.6 4.7 5.2"/>',
+  "tool": '<circle cx="7" cy="7" r="3"/><circle cx="17" cy="17" r="3"/><line x1="9.5" y1="9.5" x2="14.5" y2="14.5"/>',
+  "truck": '<rect x="1" y="7" width="13" height="9" rx="1"/><path d="M14 10h4l3 3v3h-7z"/><circle cx="5.5" cy="18.5" r="1.6"/><circle cx="17.5" cy="18.5" r="1.6"/>',
+  "warehouse": '<path d="M3 10 L12 4 L21 10 V20 H3 Z"/><rect x="9.5" y="13" width="5" height="7"/>',
+  "mappin": '<path d="M12 21s-7-6.3-7-11a7 7 0 0 1 14 0c0 4.7-7 11-7 11z"/><circle cx="12" cy="10" r="2.4"/>',
+  "package": '<path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/><line x1="12" y1="13" x2="12" y2="21"/>',
+  "clipboard": '<rect x="6" y="4" width="12" height="16" rx="1.5"/><rect x="9" y="2" width="6" height="4" rx="1"/><line x1="9" y1="10.5" x2="15" y2="10.5"/><line x1="9" y1="14.5" x2="15" y2="14.5"/>',
+  "shield": '<path d="M12 3l7 3v6c0 4.5-3 8-7 9-4-1-7-4.5-7-9V6z"/>',
+  "backspace": '<path d="M9 6h11v12H9l-6-6z"/><line x1="13" y1="10" x2="17" y2="14"/><line x1="17" y1="10" x2="13" y2="14"/>',
+  "logout": '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>',
+  "power": '<path d="M12 3v8"/><path d="M6.3 6.3a8 8 0 1 0 11.4 0"/>',
+  "download": '<path d="M12 3v11.5"/><polyline points="7.5 10.5 12 15 16.5 10.5"/><path d="M5 19h14"/>'
+};
+function icon(name, size, extraClass){
+  size = size || 20;
+  var body = ICONS[name] || "";
+  var cls = "icon" + (extraClass ? " " + extraClass : "");
+  return '<svg class="' + cls + '" width="' + size + '" height="' + size + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + body + '</svg>';
+}
+
+/* ---------------- Utilities ---------------- */
+function uid(prefix){ return prefix + "-" + Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+function nowIso(){ return new Date().toISOString(); }
+function fmtDT(iso){
+  try {
+    var d = new Date(iso);
+    return d.toLocaleDateString(undefined, { month: "short", day: "numeric" }) + " \u00B7 " +
+           d.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
+  } catch (e) { return iso; }
+}
+function esc(str){
+  return String(str === undefined || str === null ? "" : str).replace(/[&<>"']/g, function(c){
+    return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+  });
+}
+async function sha256Hex(text){
+  var enc = new TextEncoder().encode(text);
+  var buf = await crypto.subtle.digest("SHA-256", enc);
+  return Array.prototype.map.call(new Uint8Array(buf), function(b){ return b.toString(16).padStart(2, "0"); }).join("");
+}
+
+/* ---------------- Seed data ---------------- */
+var ADMIN_PIN = "9999";
+var DEFAULT_PIN = "1234";
+var SEED_VERSION = 3; // bump when SEED_* below changes, to trigger a safe one-time upgrade
+
+var SEED_LOCATIONS = [
+  { id: "joes-shop", name: "Joe's Shop", kind: "warehouse" },
+  { id: "darrens-shop", name: "Darren's Shop", kind: "warehouse" },
+  { id: "pauls-shop", name: "Paul's Shop", kind: "warehouse" },
+  { id: "truck1", name: "Service Truck 1", kind: "truck" },
+  { id: "truck2", name: "Service Truck 2", kind: "truck" },
+  { id: "jobsite", name: "Customer Job Site", kind: "mappin" },
+  { id: "repair", name: "Repair / Calibration", kind: "tool" }
+];
+
+var SEED_TECHNICIANS = [
+  { id: "ronnyp", name: "Ronny P.", active: true },
+  { id: "ryanp", name: "Ryan P.", active: true },
+  { id: "mattg", name: "Matt G.", active: true },
+  { id: "darrenz", name: "Darren Z.", active: true },
+  { id: "brentz", name: "Brent Z.", active: true },
+  { id: "paulz", name: "Paul Z.", active: true },
+  { id: "joez", name: "Joe Z.", active: true },
+  { id: "kyles", name: "Kyle S.", active: true },
+  { id: "jamesch", name: "James Ch.", active: true },
+  { id: "kaych", name: "Kay Ch.", active: true },
+  { id: "mikes", name: "Mike S.", active: true },
+  { id: "chriss", name: "Chris S.", active: true },
+  { id: "mikew", name: "Mike W.", active: true }
+];
+
+var SEED_TOOLS_BASE = [
+  { name: "1/2\" Tube Bender", category: "Tube Benders" },
+  { name: "3/8\" Tube Bender", category: "Tube Benders" },
+  { name: "Threader 1", category: "Threading Equipment" },
+  { name: "Threader 2", category: "Threading Equipment" },
+  { name: "Pressure Test Gauge 1", category: "Testing Equipment" },
+  { name: "4-20mA Generator", category: "Testing Equipment" },
+  { name: "Nitrogen Tank", category: "Field Equipment" }
+];
+
+function cloneLocations(){ return SEED_LOCATIONS.map(function(l){ return Object.assign({}, l); }); }
+async function buildFreshTechnicians(){
+  var hash = await sha256Hex(DEFAULT_PIN);
+  return SEED_TECHNICIANS.map(function(t){ return Object.assign({}, t, { pinHash: hash }); });
+}
+function buildFreshTools(locations){
+  var defaultLocId = locations && locations[0] ? locations[0].id : null;
+  return SEED_TOOLS_BASE.map(function(t, i){
+    return {
+      id: "TL-" + String(i + 1).padStart(3, "0"),
+      name: t.name,
+      category: t.category,
+      active: true,
+      holder: { type: "location", id: defaultLocId },
+      status: "Available",
+      lastUpdate: nowIso(),
+      lastUpdatedBy: "System Setup",
+      notes: ""
+    };
+  });
+}
+
+/* ---------------- App state ---------------- */
+var S = {
+  loading: true,
+  needsSetup: false,
+  fatalError: null,
+  technicians: [],
+  tools: [],
+  locations: [],
+  log: [],
+  screen: "login",
+  pinTarget: null,       // technician object, or "admin"
+  pinBuffer: "",
+  pinError: false,
+  currentTech: null,
+  adminAuthed: false,
+  adminTab: "tools",
+  searchQuery: "",
+  categoryFilter: "All",
+  selectedTool: null,
+  cameFrom: "pick-tool", // which screen to return to on back from tool flow
+  foundAt: null,          // {type:'technician'|'location', id}
+  mismatch: false,
+  destination: null,      // {type, id}
+  notes: "",
+  saving: false,
+  toast: null,
+  confirmDialog: null     // {message, onYes}
+};
+
+function activeTechnicians(){ return S.technicians.filter(function(t){ return t.active; }); }
+function activeTools(){ return S.tools.filter(function(t){ return t.active !== false; }); }
+
+function findTech(id){ return S.technicians.find(function(t){ return t.id === id; }); }
+function findLoc(id){ return S.locations.find(function(l){ return l.id === id; }); }
+function findTool(id){ return S.tools.find(function(t){ return t.id === id; }); }
+
+function refLabel(ref){
+  if (!ref) return "Unrecorded";
+  if (ref.type === "technician"){
+    var t = findTech(ref.id);
+    return t ? t.name : "Former technician";
+  }
+  var l = findLoc(ref.id);
+  return l ? l.name : "Unknown location";
+}
+function refKind(ref){
+  if (!ref) return "tool";
+  if (ref.type === "technician") return "user";
+  var l = findLoc(ref.id);
+  return l ? l.kind : "mappin";
+}
+function refsEqual(a, b){
+  if (!a || !b) return false;
+  return a.type === b.type && a.id === b.id;
+}
+function statusForDestination(ref){
+  if (ref.type === "technician") return "With Technician";
+  var loc = findLoc(ref.id);
+  var kind = loc ? loc.kind : "mappin";
+  switch (kind){
+    case "truck": return "On Truck";
+    case "mappin": return "On Job Site";
+    case "tool": return "In Repair / Calibration";
+    case "warehouse":
+    default: return "Available";
+  }
+}
+function toolCategories(){
+  var set = {};
+  activeTools().forEach(function(t){ set[t.category] = true; });
+  return Object.keys(set).sort();
+}
+function toolsHeldBy(techId){
+  return activeTools().filter(function(t){ return t.holder && t.holder.type === "technician" && t.holder.id === techId; });
+}
+
+/* ---------------- Storage (Google Apps Script backend) ----------------
+   This build talks to a Google Sheet through a small Apps Script Web App
+   instead of Claude's window.storage, so it works for anyone with the
+   link — no Claude account or plan required. See SETUP-GUIDE.md.
+
+   Everything — reads AND writes — goes out as a <script src="..."> tag
+   (JSONP), never fetch(). Google's Apps Script Web Apps don't reliably
+   send back the Access-Control-Allow-Origin header a cross-origin fetch()
+   needs, and POST specifically can also get silently neutralized by some
+   ad blockers / privacy extensions that heuristically treat a cross-origin
+   POST as a tracking beacon. A plain script-tag GET isn't subject to
+   either problem, so that's the one mechanism used for all storage calls.
+   ------------------------------------------------------------------- */
+var BACKEND_URL = "https://script.google.com/macros/s/AKfycbwK9W8Fq57xiHU2CVHFWElPd_jvcG8BTx9QSkD3fo4Hzux7anTJG_31mr6GWAdiid9GaQ/exec";
+var FETCH_TIMEOUT_MS = 12000;
+var __jsonpCounter = 0;
+
+function backendConfigured(){
+  return typeof BACKEND_URL === "string" && BACKEND_URL.indexOf("script.google.com") !== -1;
+}
+
+function jsonpRequest_(params){
+  return new Promise(function(resolve, reject){
+    var cbName = "__toolCustodyCb" + (__jsonpCounter++) + "_" + Date.now();
+    var script = document.createElement("script");
+    var timer = setTimeout(function(){
+      cleanup();
+      var err = new Error("timed out");
+      err.name = "AbortError";
+      reject(err);
+    }, FETCH_TIMEOUT_MS);
+    function cleanup(){
+      clearTimeout(timer);
+      delete window[cbName];
+      if (script.parentNode) script.parentNode.removeChild(script);
+    }
+    window[cbName] = function(data){
+      cleanup();
+      resolve(data);
+    };
+    script.onerror = function(){
+      cleanup();
+      reject(new Error("could not load the database script"));
+    };
+    var qs = Object.keys(params).map(function(k){
+      return encodeURIComponent(k) + "=" + encodeURIComponent(params[k]);
+    }).join("&");
+    script.src = BACKEND_URL + "?" + qs + "&callback=" + cbName;
+    document.head.appendChild(script);
+  });
+}
+
+async function storageGet(key){
+  try {
+    var data = await jsonpRequest_({ action: "get", key: key });
+    if (!data || data.value === null || data.value === undefined) return null;
+    return JSON.parse(data.value);
+  } catch (e){
+    console.error("storage get failed", key, e);
+    S.lastStorageError = describeStorageError_(e);
+    return null;
+  }
+}
+async function storageSet(key, value){
+  try {
+    var data = await jsonpRequest_({ action: "set", key: key, value: JSON.stringify(value) });
+    return !!data && data.ok === true;
+  } catch (e){
+    console.error("storage set failed", key, e);
+    S.lastStorageError = describeStorageError_(e);
+    return false;
+  }
+}
+// Adds one entry to the activity log without ever re-sending the whole
+// (potentially large) history — only ever a single entry travels over the
+// URL, no matter how long the log has grown. Returns the updated full log
+// array on success, or null on failure.
+async function storageAppendLog(entry){
+  try {
+    var data = await jsonpRequest_({ action: "append", key: "activity-log", entry: JSON.stringify(entry) });
+    if (!data || !data.ok) return null;
+    return JSON.parse(data.value);
+  } catch (e){
+    console.error("storage append failed", e);
+    S.lastStorageError = describeStorageError_(e);
+    return null;
+  }
+}
+function describeStorageError_(e){
+  if (e && e.name === "AbortError") return "The database took too long to respond (timed out after " + Math.round(FETCH_TIMEOUT_MS / 1000) + "s).";
+  return "Could not reach the database (" + (e && e.message ? e.message : "network error") + ").";
+}
+
+async function bootstrap(){
+  // Show *something* immediately — never leave the screen blank while we
+  // wait on the network, even if the backend is slow or unreachable.
+  S.loading = true;
+  render();
+
+  if (!backendConfigured()){
+    S.loading = false;
+    S.needsSetup = true;
+    render();
+    return;
+  }
+  try {
+    var reads = await Promise.all([
+      storageGet("technicians"),
+      storageGet("tools"),
+      storageGet("locations"),
+      storageGet("activity-log"),
+      storageGet("seed-version")
+    ]);
+    var technicians = reads[0], tools = reads[1], locations = reads[2], log = reads[3], seedVersion = reads[4];
+
+    var freshInstall = (!technicians && !tools && !locations);
+
+    if (freshInstall){
+      locations = cloneLocations();
+      technicians = await buildFreshTechnicians();
+      tools = buildFreshTools(locations);
+      log = log || [];
+      // Written one at a time on purpose: the backend serializes concurrent
+      // writes behind a shared lock (so two technicians saving at once can't
+      // collide), so firing all five at once just means the last ones sit
+      // queued behind the others until each one's own client-side timeout
+      // expires. Going one at a time keeps each request's timeout budget
+      // covering only its own work.
+      var seedOk = true;
+      seedOk = (await storageSet("locations", locations)) && seedOk;
+      seedOk = (await storageSet("technicians", technicians)) && seedOk;
+      seedOk = (await storageSet("tools", tools)) && seedOk;
+      seedOk = (await storageSet("activity-log", log)) && seedOk;
+      seedOk = (await storageSet("seed-version", SEED_VERSION)) && seedOk;
+      if (!seedOk){
+        throw new Error(S.lastStorageError || "Could not save initial data to the database.");
+      }
+    } else {
+      // Defensively fill in anything genuinely missing.
+      if (!locations){ locations = cloneLocations(); await storageSet("locations", locations); }
+      if (!technicians){ technicians = await buildFreshTechnicians(); await storageSet("technicians", technicians); }
+      if (!tools){ tools = buildFreshTools(locations); await storageSet("tools", tools); }
+      if (!log){ log = []; await storageSet("activity-log", log); }
+
+      // If this install's technician list is still exactly the old
+      // placeholder demo roster (Arad K. / Xander N.), it's safe to upgrade
+      // to the current company roster automatically — even if a few test
+      // transfers were logged against those placeholder names, since that
+      // was never real company data. If ANY technician outside that old
+      // placeholder set exists (meaning someone already started entering
+      // real people), never touch it silently — use "Reload Company
+      // Roster" in the Admin panel instead.
+      var OLD_PLACEHOLDER_TECH_IDS = ["aradk", "xandern"];
+      var isUntouchedPlaceholderRoster = !technicians || technicians.length === 0 ||
+        technicians.every(function(t){ return OLD_PLACEHOLDER_TECH_IDS.indexOf(t.id) !== -1; });
+      var needsUpgrade = (!seedVersion || seedVersion < SEED_VERSION) && isUntouchedPlaceholderRoster;
+      if (needsUpgrade){
+        locations = cloneLocations();
+        technicians = await buildFreshTechnicians();
+        tools = buildFreshTools(locations);
+        await storageSet("locations", locations);
+        await storageSet("technicians", technicians);
+        await storageSet("tools", tools);
+        await storageSet("seed-version", SEED_VERSION);
+      }
+    }
+
+    S.technicians = technicians;
+    S.tools = tools;
+    S.locations = locations;
+    S.log = log;
+    S.loading = false;
+  } catch (e){
+    console.error(e);
+    S.loading = false;
+    S.fatalError = (S.lastStorageError || e.message || "Could not load the tool database.") + " Check your connection and reload.";
+  }
+  render();
+}
+
+/* ---------------- Toast ---------------- */
+var toastTimer = null;
+function showToast(msg, isError){
+  S.toast = { msg: msg, isError: !!isError };
+  render();
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function(){ S.toast = null; render(); }, 3200);
+}
+
+/* ---------------- Navigation ---------------- */
+function goto(screen){
+  S.screen = screen;
+  S.pinError = false;
+  render();
+  var app = document.getElementById("app");
+  if (app) app.scrollTop = 0;
+}
+
+function resetTransferFlow(){
+  S.selectedTool = null;
+  S.foundAt = null;
+  S.mismatch = false;
+  S.destination = null;
+  S.notes = "";
+}
+
+/* ---------------- App namespace (handlers referenced from inline HTML) ---------------- */
+var App = {};
+
+App.chooseTechnician = function(techId){
+  var t = findTech(techId);
+  if (!t) return;
+  S.pinTarget = t;
+  S.pinBuffer = "";
+  S.pinError = false;
+  goto("pin");
+};
+
+App.chooseAdmin = function(){
+  S.pinTarget = "admin";
+  S.pinBuffer = "";
+  S.pinError = false;
+  goto("pin");
+};
+
+App.pinDigit = function(d){
+  if (S.pinBuffer.length >= 4) return;
+  S.pinBuffer += d;
+  S.pinError = false;
+  render();
+  if (S.pinBuffer.length === 4) setTimeout(App.submitPin, 120);
+};
+App.pinBackspace = function(){
+  S.pinBuffer = S.pinBuffer.slice(0, -1);
+  render();
+};
+App.pinClear = function(){
+  S.pinBuffer = "";
+  render();
+};
+
+App.submitPin = async function(){
+  if (S.pinTarget === "admin"){
+    if (S.pinBuffer === ADMIN_PIN){
+      S.adminAuthed = true;
+      S.adminTab = "tools";
+      goto("admin");
+    } else {
+      S.pinError = true;
+      S.pinBuffer = "";
+      render();
+    }
+    return;
+  }
+  var hash = await sha256Hex(S.pinBuffer);
+  if (S.pinTarget && hash === S.pinTarget.pinHash){
+    S.currentTech = S.pinTarget;
+    S.pinTarget = null;
+    S.pinBuffer = "";
+    goto("home");
+  } else {
+    S.pinError = true;
+    S.pinBuffer = "";
+    render();
+  }
+};
+
+App.backFromPin = function(){
+  S.pinTarget = null;
+  S.pinBuffer = "";
+  S.pinError = false;
+  goto(S.adminAuthed === false && S.screen === "pin" ? "login" : "login");
+};
+
+App.logout = function(){
+  S.currentTech = null;
+  S.adminAuthed = false;
+  resetTransferFlow();
+  goto("login");
+};
+
+App.goHome = function(){ resetTransferFlow(); goto("home"); };
+
+App.openPickTool = function(){
+  S.searchQuery = "";
+  S.categoryFilter = "All";
+  S.cameFrom = "home";
+  goto("pick-tool");
+};
+
+App.openMyInventory = function(){ goto("my-inventory"); };
+App.openActivity = function(){ goto("activity"); };
+
+App.searchInput = function(val){ S.searchQuery = val; renderScreenOnly(); };
+App.setCategory = function(cat){ S.categoryFilter = cat; render(); };
+
+App.pickTool = function(toolId, fromInventory){
+  var tool = findTool(toolId);
+  if (!tool) return;
+  S.selectedTool = tool;
+  S.foundAt = null;
+  S.mismatch = false;
+  S.destination = null;
+  S.notes = "";
+  S.cameFrom = fromInventory ? "my-inventory" : "pick-tool";
+  goto("found-at");
+};
+
+App.backFromFoundAt = function(){ goto(S.cameFrom); };
+
+App.chooseFoundAt = function(type, id){
+  S.foundAt = { type: type, id: id };
+  render();
+};
+
+App.confirmFoundAt = function(){
+  if (!S.foundAt || !S.selectedTool) return;
+  S.mismatch = !refsEqual(S.foundAt, S.selectedTool.holder);
+  goto("destination");
+};
+
+App.backFromDestination = function(){ goto("found-at"); };
+
+App.chooseDestination = function(type, id){
+  S.destination = { type: type, id: id };
+  render();
+};
+
+App.notesInput = function(val){ S.notes = val; };
+
+App.confirmTransfer = async function(){
+  if (!S.selectedTool || !S.foundAt || !S.destination || S.saving) return;
+  S.saving = true;
+  render();
+
+  var tool = findTool(S.selectedTool.id);
+  var previousHolder = tool.holder;
+  var performedBy = S.currentTech ? S.currentTech.name : "Unknown";
+  var entry = {
+    id: uid("txn"),
+    timestamp: nowIso(),
+    toolId: tool.id,
+    toolName: tool.name,
+    performedBy: performedBy,
+    previousHolderLabel: refLabel(previousHolder),
+    foundAtLabel: refLabel(S.foundAt),
+    newHolderLabel: refLabel(S.destination),
+    action: "Transfer",
+    mismatch: S.mismatch,
+    notes: S.notes.trim()
+  };
+
+  tool.holder = S.destination;
+  tool.status = statusForDestination(S.destination);
+  tool.lastUpdate = entry.timestamp;
+  tool.lastUpdatedBy = performedBy;
+  if (S.notes.trim()) tool.notes = S.notes.trim();
+
+  var toolsOk = await storageSet("tools", S.tools);
+  var updatedLog = await storageAppendLog(entry);
+
+  S.saving = false;
+  if (!toolsOk || !updatedLog){
+    showToast("Could not save the transfer. Please try again.", true);
+    render();
+    return;
+  }
+  S.log = updatedLog;
+  goto("success");
+};
+
+App.moveAnother = function(){ resetTransferFlow(); App.openPickTool(); };
+
+/* ---- Admin ---- */
+App.adminSetTab = function(tab){ S.adminTab = tab; S.confirmDialog = null; render(); };
+App.adminLogout = function(){ S.adminAuthed = false; goto("login"); };
+
+App.adminToggleTechActive = async function(techId){
+  var t = findTech(techId);
+  if (!t) return;
+  t.active = !t.active;
+  await storageSet("technicians", S.technicians);
+  render();
+};
+
+App.adminAddTechnician = async function(name){
+  name = (name || "").trim();
+  if (!name) { showToast("Enter a technician name.", true); return; }
+  var id = name.toLowerCase().replace(/[^a-z0-9]+/g, "").slice(0, 16) || uid("tech");
+  if (findTech(id)) id = id + Math.floor(Math.random() * 90 + 10);
+  var hash = await sha256Hex(DEFAULT_PIN);
+  S.technicians.push({ id: id, name: name, active: true, pinHash: hash });
+  await storageSet("technicians", S.technicians);
+  showToast(name + " added. Starting PIN is " + DEFAULT_PIN + ".");
+  render();
+};
+
+App.adminResetPin = async function(techId){
+  var t = findTech(techId);
+  if (!t) return;
+  var newPin = prompt("Enter a new 4-digit PIN for " + t.name + ":");
+  if (newPin === null) return;
+  if (!/^\d{4}$/.test(newPin)){ showToast("PIN must be exactly 4 digits.", true); return; }
+  t.pinHash = await sha256Hex(newPin);
+  await storageSet("technicians", S.technicians);
+  showToast("PIN updated for " + t.name + ".");
+};
+
+App.adminAddTool = async function(name, category){
+  name = (name || "").trim();
+  category = (category || "").trim() || "Uncategorized";
+  if (!name) { showToast("Enter a tool name.", true); return; }
+  var n = S.tools.length + 1;
+  var id = "TL-" + String(n).padStart(3, "0");
+  while (findTool(id)) { n++; id = "TL-" + String(n).padStart(3, "0"); }
+  var defaultLocId = S.locations[0] ? S.locations[0].id : null;
+  S.tools.push({
+    id: id, name: name, category: category, active: true,
+    holder: { type: "location", id: defaultLocId }, status: "Available",
+    lastUpdate: nowIso(), lastUpdatedBy: "Admin", notes: ""
+  });
+  await storageSet("tools", S.tools);
+  showToast(name + " added.");
+  render();
+};
+
+App.adminRetireTool = async function(toolId){
+  var t = findTool(toolId);
+  if (!t) return;
+  t.active = !t.active;
+  await storageSet("tools", S.tools);
+  render();
+};
+
+App.adminAddLocation = async function(name, kind){
+  name = (name || "").trim();
+  kind = kind || "mappin";
+  if (!name) { showToast("Enter a location name.", true); return; }
+  var id = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || uid("loc");
+  if (findLoc(id)) id = id + "-" + Math.floor(Math.random() * 90 + 10);
+  S.locations.push({ id: id, name: name, kind: kind });
+  await storageSet("locations", S.locations);
+  showToast(name + " added.");
+  render();
+};
+
+App.adminLoadRoster = async function(){
+  var ok = confirm("Replace the current technicians, tools, and locations with the standard company roster? The activity log is kept.");
+  if (!ok) return;
+  var locations = cloneLocations();
+  var technicians = await buildFreshTechnicians();
+  var tools = buildFreshTools(locations);
+  S.locations = locations;
+  S.technicians = technicians;
+  S.tools = tools;
+  await storageSet("locations", S.locations);
+  await storageSet("technicians", S.technicians);
+  await storageSet("tools", S.tools);
+  await storageSet("seed-version", SEED_VERSION);
+  showToast("Company roster loaded.");
+  render();
+};
+
+App.adminEditToolStart = function(toolId){
+  S.adminEditingTool = toolId;
+  render();
+};
+App.adminEditToolCancel = function(){
+  S.adminEditingTool = null;
+  render();
+};
+App.adminEditToolSave = async function(toolId, holderType, holderId, status, notes){
+  var t = findTool(toolId);
+  if (!t) return;
+  var ref = { type: holderType, id: holderId };
+  var entry = {
+    id: uid("txn"),
+    timestamp: nowIso(),
+    toolId: t.id,
+    toolName: t.name,
+    performedBy: "Admin",
+    previousHolderLabel: refLabel(t.holder),
+    foundAtLabel: refLabel(t.holder),
+    newHolderLabel: refLabel(ref),
+    action: "Admin Correction",
+    mismatch: false,
+    notes: (notes || "").trim()
+  };
+  t.holder = ref;
+  t.status = status || statusForDestination(ref);
+  t.lastUpdate = entry.timestamp;
+  t.lastUpdatedBy = "Admin";
+  if (notes) t.notes = notes.trim();
+  await storageSet("tools", S.tools);
+  var updatedLog = await storageAppendLog(entry);
+  if (updatedLog) S.log = updatedLog;
+  S.adminEditingTool = null;
+  showToast("Record corrected for " + t.name + ".");
+  render();
+};
+
+App.dismissToast = function(){ S.toast = null; render(); };
+
+/* ---- Word export ---- */
+function wordDocHtml(){
+  var generated = new Date().toLocaleString();
+  var mismatchCount = S.log.filter(function(e){ return e.mismatch; }).length;
+
+  var html = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">' +
+    '<head><meta charset="utf-8"><title>Tool Custody Report</title>' +
+    '<!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View>' +
+    '<w:Zoom>100</w:Zoom></w:WordDocument></xml><![endif]-->' +
+    '<style>' +
+      '@page{ margin: 1in; }' +
+      'body{ font-family: Calibri, Arial, sans-serif; font-size: 11pt; color: #1a1a1a; }' +
+      'h1{ font-size: 20pt; color: #7a5f00; border-bottom: 2px solid #d9a900; padding-bottom: 6px; margin-bottom: 2px; }' +
+      'h2{ font-size: 14pt; color: #222; margin-top: 26px; border-bottom: 1px solid #bbb; padding-bottom: 4px; }' +
+      'p.meta{ color: #555; font-size: 9.5pt; margin-top: 2px; }' +
+      'table{ border-collapse: collapse; width: 100%; margin-top: 8px; }' +
+      'th{ background: #2b2f34; color: #fff; text-align: left; padding: 6px 8px; font-size: 9.5pt; }' +
+      'td{ border: 1px solid #ccc; padding: 6px 8px; font-size: 9.5pt; vertical-align: top; }' +
+      'tr:nth-child(even) td{ background: #f5f5f5; }' +
+      '.mismatch-yes{ color: #b23b2e; font-weight: bold; }' +
+      '.dim{ color: #777; }' +
+    '</style></head><body>' +
+    '<h1>Tool Custody &mdash; Administrative Report</h1>' +
+    '<p class="meta">Generated ' + esc(generated) + ' &middot; ' + S.tools.length + ' tools tracked &middot; ' + S.log.length + ' logged movements &middot; ' + mismatchCount + ' location mismatch(es)</p>';
+
+  html += '<h2>Technicians</h2><table><tr><th>Name</th><th>Status</th><th>Tools Checked Out</th></tr>';
+  S.technicians.forEach(function(t){
+    html += '<tr><td>' + esc(t.name) + '</td><td>' + (t.active ? "Active" : "Deactivated") + '</td><td>' + toolsHeldBy(t.id).length + '</td></tr>';
+  });
+  html += '</table>';
+
+  html += '<h2>Tools</h2><table><tr><th>ID</th><th>Name</th><th>Category</th><th>Status</th><th>Current Location</th><th>Last Update</th><th>Updated By</th><th>Notes</th></tr>';
+  S.tools.forEach(function(t){
+    html += '<tr><td>' + esc(t.id) + '</td><td>' + esc(t.name) + (t.active === false ? ' <span class="dim">(retired)</span>' : '') + '</td><td>' + esc(t.category) + '</td><td>' + esc(t.status) + '</td><td>' + esc(refLabel(t.holder)) + '</td><td>' + esc(fmtDT(t.lastUpdate)) + '</td><td>' + esc(t.lastUpdatedBy) + '</td><td>' + esc(t.notes || "") + '</td></tr>';
+  });
+  html += '</table>';
+
+  html += '<h2>Locations</h2><table><tr><th>Name</th></tr>';
+  S.locations.forEach(function(l){
+    html += '<tr><td>' + esc(l.name) + '</td></tr>';
+  });
+  html += '</table>';
+
+  html += '<h2>Activity Log (' + S.log.length + ' entries)</h2><table><tr><th>Date / Time</th><th>Tool</th><th>Recorded From</th><th>Found At</th><th>Moved To</th><th>By</th><th>Action</th><th>Mismatch</th><th>Notes</th></tr>';
+  S.log.forEach(function(e){
+    html += '<tr><td>' + esc(fmtDT(e.timestamp)) + '</td><td>' + esc(e.toolName) + '</td><td>' + esc(e.previousHolderLabel) + '</td><td>' + esc(e.foundAtLabel) + '</td><td>' + esc(e.newHolderLabel) + '</td><td>' + esc(e.performedBy) + '</td><td>' + esc(e.action) + '</td><td class="' + (e.mismatch ? "mismatch-yes" : "") + '">' + (e.mismatch ? "Yes" : "") + '</td><td>' + esc(e.notes || "") + '</td></tr>';
+  });
+  html += '</table>';
+
+  html += '</body></html>';
+  return html;
+}
+
+App.exportWord = function(){
+  try {
+    var html = wordDocHtml();
+    var blob = new Blob(["\ufeff", html], { type: "application/msword" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    var stamp = new Date().toISOString().slice(0, 10);
+    a.href = url;
+    a.download = "Tool-Custody-Report-" + stamp + ".doc";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 4000);
+    showToast("Word report downloaded.");
+  } catch (e){
+    console.error("export failed", e);
+    showToast("Could not generate the Word report.", true);
+  }
+};
+
+/* Expose globally for inline handlers */
+window.App = App;
+
+/* ---------------- Rendering ---------------- */
+function render(){
+  var root = document.getElementById("app");
+  if (!root) return;
+  var active = document.activeElement;
+  var focusId = (active && active.id) ? active.id : null;
+  var selStart = null, selEnd = null;
+  if (focusId && typeof active.selectionStart === "number"){
+    selStart = active.selectionStart;
+    selEnd = active.selectionEnd;
+  }
+  root.innerHTML = screenHTML();
+  if (focusId){
+    var el = document.getElementById(focusId);
+    if (el){
+      el.focus();
+      if (selStart !== null && typeof el.setSelectionRange === "function"){
+        try { el.setSelectionRange(selStart, selEnd); } catch (e){}
+      }
+    }
+  }
+}
+function renderScreenOnly(){ render(); }
+
+function screenHTML(){
+  if (S.loading) return loadingHTML();
+  if (S.needsSetup) return needsSetupHTML();
+  if (S.fatalError) return errorHTML();
+  if (S.toast) { /* toast rendered inside layout */ }
+
+  var body;
+  switch (S.screen){
+    case "login": body = loginHTML(); break;
+    case "pin": body = pinHTML(); break;
+    case "home": body = homeHTML(); break;
+    case "pick-tool": body = pickToolHTML(); break;
+    case "found-at": body = foundAtHTML(); break;
+    case "destination": body = destinationHTML(); break;
+    case "success": body = successHTML(); break;
+    case "my-inventory": body = myInventoryHTML(); break;
+    case "activity": body = activityHTML(); break;
+    case "admin": body = adminHTML(); break;
+    default: body = loginHTML();
+  }
+  return body + toastHTML();
+}
+
+function loadingHTML(){
+  return '<div class="center-fill"><div class="spinner"></div><p class="dim">Loading tool records\u2026</p></div>';
+}
+function errorHTML(){
+  var testUrl = backendConfigured() ? (BACKEND_URL + "?key=technicians&callback=test") : "";
+  return '<div class="center-fill"><div class="alert-card">' + icon("alert", 28) + '<p>' + esc(S.fatalError) + '</p>' +
+    (testUrl ?
+      '<div class="diag-box">' +
+        '<p class="group-label">To help diagnose this</p>' +
+        '<p class="dim-sm">Open this link directly in a browser tab:</p>' +
+        '<code class="diag-url">' + esc(testUrl) + '</code>' +
+        '<p class="dim-sm">It should show something like <code>test({"key":"technicians",...});</code> — if it shows something else (a sign-in page, a raw <code>{...}</code> with no <code>test(...)</code> wrapper, or doesn\u2019t load at all), that tells us where the problem is.</p>' +
+      '</div>' : '') +
+    '</div></div>';
+}
+function needsSetupHTML(){
+  return '<div class="screen setup-screen">' +
+    '<div class="brand">' +
+      '<div class="brand-mark">' + icon("sliders", 26) + '</div>' +
+      '<h1>Setup Needed</h1>' +
+      '<p class="brand-sub">This copy isn\u2019t connected to a database yet</p>' +
+    '</div>' +
+    '<div class="setup-card">' +
+      '<p class="group-label">One-time setup (5 minutes)</p>' +
+      '<ol class="setup-list">' +
+        '<li>Create a Google Sheet and open <strong>Extensions \u2192 Apps Script</strong>.</li>' +
+        '<li>Paste in the contents of <strong>Code.gs</strong> (provided alongside this file).</li>' +
+        '<li>Click <strong>Deploy \u2192 New deployment \u2192 Web app</strong>. Set <strong>Execute as: Me</strong> and <strong>Who has access: Anyone</strong>, then Deploy.</li>' +
+        '<li>Copy the Web app URL (it ends in <strong>/exec</strong>).</li>' +
+        '<li>Open this HTML file in a text editor, find <strong>BACKEND_URL</strong> near the top of the script, and paste your URL in between the quotes.</li>' +
+        '<li>Save the file and reload this page.</li>' +
+      '</ol>' +
+      '<p class="dim-sm">Full walkthrough: see SETUP-GUIDE.md.</p>' +
+    '</div>' +
+    '</div>';
+}
+function toastHTML(){
+  if (!S.toast) return "";
+  return '<div class="toast ' + (S.toast.isError ? "toast-err" : "") + '">' + esc(S.toast.msg) + "</div>";
+}
+
+
+/* ---- Login ---- */
+function loginHTML(){
+  var tiles = activeTechnicians().map(function(t){
+    var initials = t.name.split(/\s+/).map(function(p){ return p[0]; }).join("").slice(0, 2).toUpperCase();
+    return '<button class="tech-tile" onclick="App.chooseTechnician(\'' + t.id + '\')">' +
+      '<span class="tech-avatar">' + esc(initials) + '</span>' +
+      '<span class="tech-name">' + esc(t.name) + '</span>' +
+      '</button>';
+  }).join("");
+
+  return '<div class="screen login-screen">' +
+    '<div class="brand">' +
+      '<div class="brand-mark">' + icon("tool", 26) + '</div>' +
+      '<h1>Tool Custody</h1>' +
+      '<p class="brand-sub">Select your profile to continue</p>' +
+    '</div>' +
+    '<div class="tech-grid">' + tiles + '</div>' +
+    '<button class="admin-link" onclick="App.chooseAdmin()">' + icon("sliders", 16) + ' Admin</button>' +
+    '</div>';
+}
+
+/* ---- PIN pad ---- */
+function pinHTML(){
+  var label = S.pinTarget === "admin" ? "Admin Access" : (S.pinTarget ? S.pinTarget.name : "");
+  var dots = "";
+  for (var i = 0; i < 4; i++){
+    dots += '<span class="pin-dot ' + (i < S.pinBuffer.length ? "filled" : "") + '"></span>';
+  }
+  var keys = ["1","2","3","4","5","6","7","8","9","","0","back"];
+  var keyHtml = keys.map(function(k){
+    if (k === "") return '<div class="pin-key pin-key-empty"></div>';
+    if (k === "back") return '<button class="pin-key pin-key-fn" onclick="App.pinBackspace()">' + icon("backspace", 20) + '</button>';
+    return '<button class="pin-key" onclick="App.pinDigit(\'' + k + '\')">' + k + '</button>';
+  }).join("");
+
+  return '<div class="screen pin-screen">' +
+    '<button class="back-btn" onclick="App.backFromPin()">' + icon("arrow-left", 18) + ' Back</button>' +
+    '<div class="pin-header">' +
+      '<div class="tag-hole"></div>' +
+      '<p class="pin-eyebrow">Enter PIN</p>' +
+      '<h2>' + esc(label) + '</h2>' +
+      '<div class="pin-dots">' + dots + '</div>' +
+      (S.pinError ? '<p class="pin-error">' + icon("alert", 14) + ' Incorrect PIN, try again</p>' : '') +
+    '</div>' +
+    '<div class="pin-pad">' + keyHtml + '</div>' +
+    '</div>';
+}
+
+/* ---- Home ---- */
+function homeHTML(){
+  var mine = toolsHeldBy(S.currentTech.id);
+  var recent = S.log.slice(0, 4);
+
+  var recentHtml = recent.length ? recent.map(activityRow).join("") :
+    '<p class="empty-note">No tool movements logged yet.</p>';
+
+  return '<div class="screen home-screen">' +
+    '<div class="topbar">' +
+      '<div>' +
+        '<p class="topbar-eyebrow">Signed in</p>' +
+        '<h2>' + esc(S.currentTech.name) + '</h2>' +
+      '</div>' +
+      '<button class="icon-btn" onclick="App.logout()" title="Log out">' + icon("logout", 20) + '</button>' +
+    '</div>' +
+
+    '<div class="stat-row">' +
+      '<div class="stat-card">' +
+        '<span class="stat-num">' + mine.length + '</span>' +
+        '<span class="stat-label">In My Inventory</span>' +
+      '</div>' +
+      '<div class="stat-card">' +
+        '<span class="stat-num">' + activeTools().length + '</span>' +
+        '<span class="stat-label">Total Tracked Tools</span>' +
+      '</div>' +
+    '</div>' +
+
+    '<button class="cta-btn" onclick="App.openPickTool()">' + icon("tool", 20) + ' Move a Tool</button>' +
+
+    '<div class="row-2">' +
+      '<button class="secondary-btn" onclick="App.openMyInventory()">' + icon("package", 18) + ' My Inventory</button>' +
+      '<button class="secondary-btn" onclick="App.openActivity()">' + icon("clock", 18) + ' Recent Activity</button>' +
+    '</div>' +
+
+    '<div class="section-head">' +
+      '<h3>Recent Activity</h3>' +
+    '</div>' +
+    '<div class="activity-list">' + recentHtml + '</div>' +
+    '</div>';
+}
+
+/* ---- Pick tool ---- */
+function pickToolHTML(){
+  var q = S.searchQuery.trim().toLowerCase();
+  var cats = ["All"].concat(toolCategories());
+  var list = activeTools().filter(function(t){
+    var matchesCat = S.categoryFilter === "All" || t.category === S.categoryFilter;
+    var matchesQ = !q || t.name.toLowerCase().indexOf(q) !== -1 || t.id.toLowerCase().indexOf(q) !== -1;
+    return matchesCat && matchesQ;
+  });
+
+  var chips = cats.map(function(c){
+    return '<button class="chip ' + (c === S.categoryFilter ? "chip-active" : "") + '" onclick="App.setCategory(\'' + esc(c).replace(/'/g, "\\'") + '\')">' + esc(c) + '</button>';
+  }).join("");
+
+  var rows = list.length ? list.map(toolListRow).join("") : '<p class="empty-note">No tools match your search.</p>';
+
+  return '<div class="screen">' +
+    '<button class="back-btn" onclick="App.goHome()">' + icon("arrow-left", 18) + ' Back</button>' +
+    '<h2 class="screen-title">Select a Tool</h2>' +
+    '<div class="search-box">' +
+      icon("search", 18, "search-icon") +
+      '<input type="text" id="tool-search-input" placeholder="Search tools or ID\u2026" value="' + esc(S.searchQuery) + '" oninput="App.searchInput(this.value)" />' +
+    '</div>' +
+    '<div class="chip-row">' + chips + '</div>' +
+    '<div class="tool-list">' + rows + '</div>' +
+    '</div>';
+}
+
+function toolListRow(t){
+  return '<button class="tool-row" onclick="App.pickTool(\'' + t.id + '\', false)">' +
+    '<div class="tool-row-main">' +
+      '<span class="tool-row-name">' + esc(t.name) + '</span>' +
+      '<span class="tool-row-id">' + esc(t.id) + '</span>' +
+    '</div>' +
+    '<div class="tool-row-sub">' +
+      '<span class="badge badge-' + statusClass(t.status) + '">' + esc(t.status) + '</span>' +
+      '<span class="dim-sm">' + icon(refKind(t.holder), 13) + ' ' + esc(refLabel(t.holder)) + '</span>' +
+    '</div>' +
+  '</button>';
+}
+
+function statusClass(status){
+  if (status === "Available") return "ok";
+  if (status === "In Repair / Calibration") return "warn";
+  return "info";
+}
+
+/* ---- Found-at confirmation ---- */
+function entityGrid(selected, onSelectFnName, extra){
+  var techButtons = activeTechnicians().map(function(t){
+    var isSel = selected && selected.type === "technician" && selected.id === t.id;
+    return '<button class="entity-chip ' + (isSel ? "entity-chip-sel" : "") + '" onclick="' + onSelectFnName + '(\'technician\',\'' + t.id + '\')">' +
+      icon("user", 16) + '<span>' + esc(t.name) + '</span>' + (extra && extra.recorded && extra.recorded.type === "technician" && extra.recorded.id === t.id ? '<span class="recorded-tag">recorded</span>' : '') +
+      '</button>';
+  }).join("");
+  var locButtons = S.locations.map(function(l){
+    var isSel = selected && selected.type === "location" && selected.id === l.id;
+    return '<button class="entity-chip ' + (isSel ? "entity-chip-sel" : "") + '" onclick="' + onSelectFnName + '(\'location\',\'' + l.id + '\')">' +
+      icon(l.kind, 16) + '<span>' + esc(l.name) + '</span>' + (extra && extra.recorded && extra.recorded.type === "location" && extra.recorded.id === l.id ? '<span class="recorded-tag">recorded</span>' : '') +
+      '</button>';
+  }).join("");
+  return '<p class="group-label">Technicians</p><div class="entity-grid">' + techButtons + '</div>' +
+         '<p class="group-label">Locations</p><div class="entity-grid">' + locButtons + '</div>';
+}
+
+function foundAtHTML(){
+  var t = S.selectedTool;
+  return '<div class="screen">' +
+    '<button class="back-btn" onclick="App.backFromFoundAt()">' + icon("arrow-left", 18) + ' Back</button>' +
+    toolTag(t) +
+    '<div class="recorded-box">' +
+      '<span class="dim-sm">Recorded location</span>' +
+      '<span class="recorded-value">' + icon(refKind(t.holder), 15) + ' ' + esc(refLabel(t.holder)) + '</span>' +
+    '</div>' +
+    '<h3 class="prompt-q">Where did you physically find this tool?</h3>' +
+    entityGrid(S.foundAt, "App.chooseFoundAt", { recorded: t.holder }) +
+    '<button class="cta-btn" ' + (S.foundAt ? "" : "disabled") + ' onclick="App.confirmFoundAt()">Confirm &amp; Continue ' + icon("arrow-left", 18, "flip") + '</button>' +
+    '</div>';
+}
+
+/* ---- Destination + notes ---- */
+function destinationHTML(){
+  var t = S.selectedTool;
+  var mismatchBanner = S.mismatch ?
+    '<div class="mismatch-banner">' + icon("alert", 18) +
+    '<span>Recorded location doesn\u2019t match where it was found. This correction will be logged.</span></div>' : "";
+
+  return '<div class="screen">' +
+    '<button class="back-btn" onclick="App.backFromDestination()">' + icon("arrow-left", 18) + ' Back</button>' +
+    toolTag(t) +
+    mismatchBanner +
+    '<h3 class="prompt-q">Move this tool to\u2026</h3>' +
+    entityGrid(S.destination, "App.chooseDestination", null) +
+    '<p class="group-label">Notes (optional)</p>' +
+    '<textarea class="notes-area" placeholder="Job site, customer, condition, missing accessories\u2026" oninput="App.notesInput(this.value)">' + esc(S.notes) + '</textarea>' +
+    '<button class="cta-btn" ' + (S.destination && !S.saving ? "" : "disabled") + ' onclick="App.confirmTransfer()">' +
+      (S.saving ? "Saving\u2026" : (icon("check", 20) + " Confirm Transfer")) +
+    '</button>' +
+    '</div>';
+}
+
+function toolTag(t){
+  return '<div class="tool-tag">' +
+    '<div class="tag-hole"></div>' +
+    '<div class="tag-id">' + esc(t.id) + '</div>' +
+    '<div class="tag-name">' + esc(t.name) + '</div>' +
+    '<div class="tag-cat">' + esc(t.category) + '</div>' +
+    '<div class="tag-meta">' +
+      '<span class="badge badge-' + statusClass(t.status) + '">' + esc(t.status) + '</span>' +
+      '<span class="dim-sm">Updated ' + fmtDT(t.lastUpdate) + ' by ' + esc(t.lastUpdatedBy) + '</span>' +
+    '</div>' +
+  '</div>';
+}
+
+/* ---- Success ---- */
+function successHTML(){
+  var t = S.selectedTool;
+  return '<div class="screen center-fill">' +
+    '<div class="success-badge">' + icon("check", 34) + '</div>' +
+    '<h2>Transfer Logged</h2>' +
+    '<p class="dim">' + esc(t.name) + ' moved to <strong>' + esc(refLabel(S.destination)) + '</strong></p>' +
+    (S.mismatch ? '<p class="mismatch-note">' + icon("alert", 14) + ' Location mismatch recorded in the activity log</p>' : '') +
+    '<button class="cta-btn" onclick="App.moveAnother()">' + icon("tool", 18) + ' Move Another Tool</button>' +
+    '<button class="secondary-btn full" onclick="App.goHome()">Back to Home</button>' +
+    '</div>';
+}
+
+/* ---- My inventory ---- */
+function myInventoryHTML(){
+  var mine = toolsHeldBy(S.currentTech.id);
+  var rows = mine.length ? mine.map(function(t){
+    return '<button class="tool-row" onclick="App.pickTool(\'' + t.id + '\', true)">' +
+      '<div class="tool-row-main">' +
+        '<span class="tool-row-name">' + esc(t.name) + '</span>' +
+        '<span class="tool-row-id">' + esc(t.id) + '</span>' +
+      '</div>' +
+      '<div class="tool-row-sub">' +
+        '<span class="badge badge-' + statusClass(t.status) + '">' + esc(t.status) + '</span>' +
+        '<span class="dim-sm">Since ' + fmtDT(t.lastUpdate) + '</span>' +
+      '</div>' +
+    '</button>';
+  }).join("") : '<p class="empty-note">Nothing currently checked out to you.</p>';
+
+  return '<div class="screen">' +
+    '<button class="back-btn" onclick="App.goHome()">' + icon("arrow-left", 18) + ' Back</button>' +
+    '<h2 class="screen-title">My Inventory</h2>' +
+    '<p class="dim">' + mine.length + ' tool' + (mine.length === 1 ? "" : "s") + ' currently with you \u2014 tap one to move it</p>' +
+    '<div class="tool-list">' + rows + '</div>' +
+    '</div>';
+}
+
+/* ---- Activity feed ---- */
+function activityRow(e){
+  return '<div class="activity-card">' +
+    '<div class="activity-top">' +
+      '<span class="activity-tool">' + esc(e.toolName) + '</span>' +
+      (e.mismatch ? '<span class="mismatch-pill">' + icon("alert", 12) + ' mismatch</span>' : '') +
+    '</div>' +
+    '<p class="activity-line">' + esc(e.previousHolderLabel) + ' \u2192 <strong>' + esc(e.newHolderLabel) + '</strong></p>' +
+    '<p class="dim-sm">Found at ' + esc(e.foundAtLabel) + ' \u00B7 by ' + esc(e.performedBy) + ' \u00B7 ' + fmtDT(e.timestamp) + '</p>' +
+    (e.notes ? '<p class="activity-notes">\u201C' + esc(e.notes) + '\u201D</p>' : '') +
+    '</div>';
+}
+
+function activityHTML(){
+  var rows = S.log.length ? S.log.slice(0, 50).map(activityRow).join("") : '<p class="empty-note">No activity recorded yet.</p>';
+  return '<div class="screen">' +
+    '<button class="back-btn" onclick="App.goHome()">' + icon("arrow-left", 18) + ' Back</button>' +
+    '<h2 class="screen-title">Recent Activity</h2>' +
+    '<div class="activity-list">' + rows + '</div>' +
+    '</div>';
+}
+
+/* ---- Admin ---- */
+function adminHTML(){
+  var tabs = [
+    ["technicians", "Technicians"],
+    ["tools", "Tools"],
+    ["locations", "Locations"],
+    ["log", "Activity Log"]
+  ];
+  var tabHtml = tabs.map(function(tb){
+    return '<button class="admin-tab ' + (S.adminTab === tb[0] ? "admin-tab-active" : "") + '" onclick="App.adminSetTab(\'' + tb[0] + '\')">' + tb[1] + '</button>';
+  }).join("");
+
+  var content;
+  if (S.adminTab === "technicians") content = adminTechniciansHTML();
+  else if (S.adminTab === "tools") content = adminToolsHTML();
+  else if (S.adminTab === "locations") content = adminLocationsHTML();
+  else content = adminLogHTML();
+
+  return '<div class="screen">' +
+    '<div class="topbar">' +
+      '<div><p class="topbar-eyebrow">' + icon("shield", 14) + ' Admin</p><h2>Database</h2></div>' +
+      '<div class="topbar-actions">' +
+        '<button class="icon-btn" onclick="App.exportWord()" title="Export to Word">' + icon("download", 18) + '</button>' +
+        '<button class="icon-btn" onclick="App.adminLogout()" title="Exit admin">' + icon("x", 20) + '</button>' +
+      '</div>' +
+    '</div>' +
+    '<button class="export-banner" onclick="App.exportWord()">' + icon("download", 16) + ' Export full database to Word (.doc)</button>' +
+    '<div class="admin-tabs">' + tabHtml + '</div>' +
+    '<div class="admin-content">' + content + '</div>' +
+    '<button class="danger-link" onclick="App.adminLoadRoster()">' + icon("sliders", 13) + ' Reload standard company roster\u2026</button>' +
+    '</div>';
+}
+
+function adminTechniciansHTML(){
+  var rows = S.technicians.map(function(t){
+    return '<div class="admin-row">' +
+      '<div class="admin-row-main">' +
+        '<span class="' + (t.active ? "" : "strike") + '">' + esc(t.name) + '</span>' +
+        '<span class="dim-sm">' + toolsHeldBy(t.id).length + ' tool(s) checked out</span>' +
+      '</div>' +
+      '<div class="admin-row-actions">' +
+        '<button class="mini-btn" onclick="App.adminResetPin(\'' + t.id + '\')">' + icon("pencil", 14) + ' PIN</button>' +
+        '<button class="mini-btn ' + (t.active ? "mini-btn-danger" : "") + '" onclick="App.adminToggleTechActive(\'' + t.id + '\')">' + (t.active ? "Deactivate" : "Reactivate") + '</button>' +
+      '</div>' +
+    '</div>';
+  }).join("");
+
+  return rows +
+    '<div class="admin-add-form">' +
+      '<input type="text" id="new-tech-name" placeholder="New technician name" />' +
+      '<button class="mini-btn mini-btn-primary" onclick="App.adminAddTechnician(document.getElementById(\'new-tech-name\').value); document.getElementById(\'new-tech-name\').value=\'\'">' + icon("plus", 14) + ' Add</button>' +
+    '</div>';
+}
+
+function adminToolsHTML(){
+  var rows = S.tools.map(function(t){
+    if (S.adminEditingTool === t.id) return adminToolEditRow(t);
+    return '<div class="admin-row">' +
+      '<div class="admin-row-main">' +
+        '<span class="' + (t.active === false ? "strike" : "") + '">' + esc(t.name) + ' <span class="dim-sm">' + esc(t.id) + '</span></span>' +
+        '<span class="dim-sm">' + esc(refLabel(t.holder)) + ' \u00B7 ' + esc(t.status) + '</span>' +
+      '</div>' +
+      '<div class="admin-row-actions">' +
+        '<button class="mini-btn" onclick="App.adminEditToolStart(\'' + t.id + '\')">' + icon("pencil", 14) + ' Correct</button>' +
+        '<button class="mini-btn ' + (t.active === false ? "" : "mini-btn-danger") + '" onclick="App.adminRetireTool(\'' + t.id + '\')">' + (t.active === false ? "Restore" : "Retire") + '</button>' +
+      '</div>' +
+    '</div>';
+  }).join("");
+
+  return rows +
+    '<div class="admin-add-form">' +
+      '<input type="text" id="new-tool-name" placeholder="New tool name" />' +
+      '<input type="text" id="new-tool-cat" placeholder="Category" />' +
+      '<button class="mini-btn mini-btn-primary" onclick="App.adminAddTool(document.getElementById(\'new-tool-name\').value, document.getElementById(\'new-tool-cat\').value); document.getElementById(\'new-tool-name\').value=\'\'; document.getElementById(\'new-tool-cat\').value=\'\'">' + icon("plus", 14) + ' Add Tool</button>' +
+    '</div>';
+}
+
+function adminToolEditRow(t){
+  var techOpts = activeTechnicians().map(function(tc){
+    return '<option value="technician:' + tc.id + '" ' + (t.holder.type === "technician" && t.holder.id === tc.id ? "selected" : "") + '>' + esc(tc.name) + '</option>';
+  }).join("");
+  var locOpts = S.locations.map(function(l){
+    return '<option value="location:' + l.id + '" ' + (t.holder.type === "location" && t.holder.id === l.id ? "selected" : "") + '>' + esc(l.name) + '</option>';
+  }).join("");
+
+  return '<div class="admin-edit-card">' +
+    '<p class="group-label">Correct record for ' + esc(t.name) + '</p>' +
+    '<select id="edit-holder-' + t.id + '">' + techOpts + locOpts + '</select>' +
+    '<input type="text" id="edit-status-' + t.id + '" placeholder="Status" value="' + esc(t.status) + '" />' +
+    '<textarea id="edit-notes-' + t.id + '" placeholder="Correction notes">' + esc(t.notes || "") + '</textarea>' +
+    '<div class="admin-row-actions">' +
+      '<button class="mini-btn mini-btn-primary" onclick="(function(){var sel=document.getElementById(\'edit-holder-' + t.id + '\').value.split(\':\'); App.adminEditToolSave(\'' + t.id + '\', sel[0], sel[1], document.getElementById(\'edit-status-' + t.id + '\').value, document.getElementById(\'edit-notes-' + t.id + '\').value);})()">Save</button>' +
+      '<button class="mini-btn" onclick="App.adminEditToolCancel()">Cancel</button>' +
+    '</div>' +
+  '</div>';
+}
+
+function adminLocationsHTML(){
+  var rows = S.locations.map(function(l){
+    return '<div class="admin-row"><div class="admin-row-main"><span>' + icon(l.kind, 15) + ' ' + esc(l.name) + '</span></div></div>';
+  }).join("");
+  return rows +
+    '<div class="admin-add-form">' +
+      '<input type="text" id="new-loc-name" placeholder="New location or truck name" />' +
+      '<select id="new-loc-kind">' +
+        '<option value="warehouse">Shop</option>' +
+        '<option value="truck">Truck</option>' +
+        '<option value="mappin">Job Site</option>' +
+        '<option value="tool">Repair / Calibration</option>' +
+      '</select>' +
+      '<button class="mini-btn mini-btn-primary" onclick="App.adminAddLocation(document.getElementById(\'new-loc-name\').value, document.getElementById(\'new-loc-kind\').value); document.getElementById(\'new-loc-name\').value=\'\'">' + icon("plus", 14) + ' Add</button>' +
+    '</div>';
+}
+
+function adminLogHTML(){
+  var mismatches = S.log.filter(function(e){ return e.mismatch; });
+  var section = '<p class="group-label">' + mismatches.length + ' location mismatch(es) on record</p>';
+  var rows = S.log.length ? S.log.map(activityRow).join("") : '<p class="empty-note">No activity yet.</p>';
+  return section + '<div class="activity-list">' + rows + '</div>';
+}
+
+/* ---------------- Init ---------------- */
+document.addEventListener("DOMContentLoaded", bootstrap);
+
+</script>
+</body>
+</html>
