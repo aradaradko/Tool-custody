@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>JSONP Diagnostic</title>
+<style>
+  body { font-family: -apple-system, sans-serif; background: #14181c; color: #eee; padding: 24px; text-align: center; }
+  #result { font-size: 22px; font-weight: bold; padding: 30px 16px; border-radius: 12px; margin-top: 20px; }
+  .pending { background: #333; color: #aaa; }
+  .pass { background: #1e4d2b; color: #7ee29a; }
+  .fail { background: #4d1e1e; color: #ff8f8f; }
+  #detail { font-size: 13px; color: #999; margin-top: 16px; text-align: left; white-space: pre-wrap; word-break: break-all; font-family: monospace; background: #000; padding: 12px; border-radius: 8px; }
+  #log { font-size: 12px; color: #888; margin-top: 12px; text-align: left; }
+</style>
+</head>
+<body>
+  <h2>JSONP Script-Tag Diagnostic</h2>
+  <p>This page tries ONLY the one mechanism the app uses to talk to the database — nothing else. It'll turn green or red within a few seconds.</p>
+  <div id="result" class="pending">Testing…</div>
+  <div id="detail"></div>
+  <div id="log"></div>
+
+  <script>
+    var BACKEND_URL = "https://script.google.com/macros/s/AKfycbwK9W8Fq57xiHU2CVHFWElPd_jvcG8BTx9QSkD3fo4Hzux7anTJG_31mr6GWAdiid9GaQ/exec";
+    var resultEl = document.getElementById("result");
+    var detailEl = document.getElementById("detail");
+    var logEl = document.getElementById("log");
+
+    function log(msg) {
+      logEl.textContent += msg + "\n";
+    }
+
+    document.addEventListener("securitypolicyviolation", function (e) {
+      log("CSP VIOLATION: " + e.violatedDirective + " blocked " + e.blockedURI);
+    });
+
+    log("Page origin: " + window.location.origin);
+    log("Page URL: " + window.location.href);
+    log("Starting test at " + new Date().toISOString());
+
+    var cbName = "__diagCallback";
+    var script = document.createElement("script");
+    var timedOut = false;
+
+    var timer = setTimeout(function () {
+      timedOut = true;
+      resultEl.className = "fail";
+      resultEl.textContent = "FAIL — timed out after 10s (no error event, no callback)";
+      log("Timeout: neither onload/callback nor onerror fired within 10s.");
+      log("This specific pattern (silence, no error event at all) usually means something is holding the connection open or dropping it without a proper HTTP-level response.");
+    }, 10000);
+
+    window[cbName] = function (data) {
+      if (timedOut) return;
+      clearTimeout(timer);
+      resultEl.className = "pass";
+      resultEl.textContent = "PASS — script loaded and executed correctly";
+      detailEl.textContent = "Received: " + JSON.stringify(data);
+      log("Success at " + new Date().toISOString());
+    };
+
+    script.onerror = function (ev) {
+      if (timedOut) return;
+      clearTimeout(timer);
+      resultEl.className = "fail";
+      resultEl.textContent = "FAIL — script.onerror fired";
+      log("onerror fired at " + new Date().toISOString());
+      log("This means the browser attempted the request and it did not complete successfully (network failure, blocked, or non-success response).");
+    };
+
+    script.src = BACKEND_URL + "?key=technicians&callback=" + cbName;
+    log("Requesting: " + script.src);
+    document.head.appendChild(script);
+  </script>
+</body>
+</html>
